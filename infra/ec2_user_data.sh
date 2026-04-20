@@ -3,7 +3,7 @@ set -euxo pipefail
 
 # Replace values before use.
 REPO_URL="https://github.com/Mr-Jerry-Haxor/ec2-deploy.git"
-BRANCH="master"
+BRANCH="main"
 AWS_REGION="us-east-1"
 USERS_TABLE_NAME="music_shared_users"
 MUSIC_TABLE_NAME="music_shared_songs"
