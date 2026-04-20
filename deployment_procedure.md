@@ -37,6 +37,9 @@ This is the first deployment to run. It creates the shared DynamoDB tables and s
 3. Check health endpoint:
    - `curl http://localhost:8000/health`
    - `curl http://<ec2-public-dns>/health`
+  
+4. install the git and run the ec2userdata manually
+   - `git clone <repo url> EC2`
 
 ## 5. Create Shared DynamoDB Tables from EC2
 1. SSH into EC2.
