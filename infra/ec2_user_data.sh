@@ -2,14 +2,14 @@
 set -euxo pipefail
 
 # Replace values before use.
-REPO_URL="https://github.com/YOUR_GITHUB_USER/cloud-assignment.git"
+REPO_URL="https://github.com/Mr-Jerry-Haxor/ec2-deploy.git"
 BRANCH="master"
 AWS_REGION="us-east-1"
 USERS_TABLE_NAME="music_shared_users"
 MUSIC_TABLE_NAME="music_shared_songs"
 SUBSCRIPTIONS_TABLE_NAME="music_shared_subscriptions"
 S3_BUCKET_NAME="music-shared-private-covers-UNIQUE"
-CORS_ALLOW_ORIGINS="http://YOUR_EC2_PUBLIC_DNS_OR_IP"
+CORS_ALLOW_ORIGINS="http://54.84.158.81"
 
 APP_ROOT="/opt/music-app"
 BACKEND_DIR="$APP_ROOT/EC2/backend"
