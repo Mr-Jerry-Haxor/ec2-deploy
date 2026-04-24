@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/Mr-Jerry-Haxor/ec2-deploy.git}"
+REPO_URL="${REPO_URL:-https://github.com/user-name/repo-name.git}"
 BRANCH="${BRANCH:-main}"
 
 AWS_REGION="${AWS_REGION:-us-east-1}"
 USERS_TABLE_NAME="${USERS_TABLE_NAME:-music_shared_users}"
 MUSIC_TABLE_NAME="${MUSIC_TABLE_NAME:-music_shared_songs}"
 SUBSCRIPTIONS_TABLE_NAME="${SUBSCRIPTIONS_TABLE_NAME:-music_shared_subscriptions}"
-S3_BUCKET_NAME="${S3_BUCKET_NAME:-music-shared-private-covers-351543164084-us-east-1}"
+S3_BUCKET_NAME="${S3_BUCKET_NAME:-music-shared-private-covers-<AWS_ACCOUNT_ID>-<AWS_REGION>}"
 
 PORT=8000
 EC2_USER=ubuntu
@@ -34,8 +34,11 @@ sudo -u ubuntu python3 -m venv "$BACKEND/.venv"
 sudo -u ubuntu "$BACKEND/.venv/bin/pip" install --upgrade pip
 sudo -u ubuntu "$BACKEND/.venv/bin/pip" install -r "$BACKEND/requirements.txt"
 
+# -------------------------
+# PUBLIC IP FIX (safe)
+# -------------------------
 echo "Getting public IP..."
-PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 || echo "localhost")
+PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || echo "localhost")
 
 echo "Configuring frontend..."
 cat > "$FRONTEND/config.js" <<EOF
@@ -77,7 +80,7 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-echo "Configuring nginx (FIXED ROUTING)..."
+echo "Configuring nginx..."
 cat >/etc/nginx/sites-available/music-ec2.conf <<EOF
 server {
     listen 80;
@@ -90,7 +93,6 @@ server {
         try_files \$uri \$uri/ /login.html;
     }
 
-    # IMPORTANT: DO NOT STRIP /api PREFIX
     location /api {
         proxy_pass http://127.0.0.1:$PORT;
         proxy_set_header Host \$host;
@@ -108,11 +110,31 @@ EOF
 rm -f /etc/nginx/sites-enabled/default
 ln -sf /etc/nginx/sites-available/music-ec2.conf /etc/nginx/sites-enabled/music-ec2.conf
 
-echo "Starting services..."
 systemctl daemon-reload
 systemctl enable music-ec2-api
 systemctl restart music-ec2-api
 systemctl enable nginx
 systemctl restart nginx
 
-echo "DONE 🚀"
+# -------------------------
+# 🔥 YOUR REQUESTED DATA LOAD STEP
+# -------------------------
+
+echo "Loading AWS tables + S3 data..."
+
+cd /opt/music-app/backend
+
+sudo -u ubuntu bash -c "
+source .venv/bin/activate
+
+echo 'Creating DynamoDB tables...'
+python create_aws_tables.py
+
+echo 'Loading songs + uploading images to S3...'
+python load_aws_data.py \
+  --file 2026a2_songs.json \
+  --upload-images \
+  --bucket \"$S3_BUCKET_NAME\"
+"
+
+echo "DONE 🚀 EC2 fully bootstrapped"
