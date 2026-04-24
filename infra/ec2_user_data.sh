@@ -19,8 +19,8 @@ AWS_SHARED_CREDENTIALS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-}"
 AWS_PROFILE="${AWS_PROFILE:-default}"
 
 APP_ROOT="${APP_ROOT:-/opt/music-app}"
-BACKEND_DIR="$APP_ROOT/EC2/backend"
-FRONTEND_DIR="$APP_ROOT/EC2/frontend"
+BACKEND_DIR="$APP_ROOT/backend"
+FRONTEND_DIR="$APP_ROOT/frontend"
 
 if [[ "$REPO_URL" == *"YOUR_GITHUB_USER"* ]]; then
   echo "ERROR: REPO_URL is still set to placeholder value."
