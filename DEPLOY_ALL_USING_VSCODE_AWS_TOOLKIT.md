@@ -3,11 +3,13 @@
 This guide deploys the full assignment solution using VS Code as the control center.
 
 It supports all three required backend architectures:
+
 - EC2 (Ubuntu 24.04)
 - ECS Fargate
 - API Gateway + Lambda
 
 It also enforces these assignment constraints:
+
 - Use branch main, not master
 - Use LabRole where possible
 - Use only port 80/443 for public access
@@ -18,12 +20,15 @@ It also enforces these assignment constraints:
 ## 1. Install and Configure VS Code Tooling
 
 ### 1.1 Install extensions
+
 Install in VS Code:
+
 - AWS Toolkit
 - Python
 - Docker
 
 ### 1.2 Configure AWS credentials for AWS Academy
+
 If your AWS Academy lab already injects credentials, use that profile.
 
 If not, create credentials file manually on your machine:
@@ -37,7 +42,7 @@ notepad "$HOME\.aws\credentials"
 Add:
 
 ```ini
-[awsacademy]
+[aws-academy]
 aws_access_key_id=YOUR_ACCESS_KEY_ID
 aws_secret_access_key=YOUR_SECRET_ACCESS_KEY
 aws_session_token=YOUR_SESSION_TOKEN
@@ -56,7 +61,9 @@ output = json
 ```
 
 ### 1.3 Select profile in AWS Toolkit
+
 In VS Code:
+
 1. Open AWS Explorer sidebar
 2. Choose Select Credentials Profile
 3. Select awsacademy
@@ -92,20 +99,21 @@ Use this first because it creates shared DynamoDB data and uploads private S3 im
 ### 3.1 Create private covers bucket
 
 ```bash
-aws s3api create-bucket \
-  --bucket "$PRIVATE_BUCKET" \
-  --region "$AWS_REGION" \
-  --create-bucket-configuration LocationConstraint="$AWS_REGION"
+aws configure list-profiles
 
-aws s3api put-public-access-block \
-  --bucket "$PRIVATE_BUCKET" \
-  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+$env:AWS_PROFILE="aws-academy"
+
+aws s3api create-bucket --bucket "$PRIVATE_BUCKET" --region "$AWS_REGION"  --profile aws-academy
+
+aws s3api put-public-access-block --bucket "$PRIVATE_BUCKET" --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true --profile aws-academy
 ```
 
 If region is us-east-1 and create-bucket rejects LocationConstraint, rerun create-bucket without that flag.
 
 ### 3.2 Launch EC2 (Ubuntu 24.04)
+
 In AWS Console (opened from Toolkit or browser):
+
 1. Launch instance: Ubuntu Server 24.04 LTS
 2. Attach LabRole instance profile
 3. Inbound rules: 22 from your IP, 80 from internet, 443 optional
@@ -116,6 +124,7 @@ In AWS Console (opened from Toolkit or browser):
    - S3_BUCKET_NAME = your private bucket
 
 ### 3.3 Validate services
+
 SSH and run:
 
 ```bash
@@ -126,6 +135,7 @@ curl -sS http://localhost/health
 ```
 
 ### 3.4 If User Data fails, use manual fallback
+
 Use EC2/deployment_procedure.md section Alternative If User Data Fails.
 
 ### 3.5 Initialize shared tables and seed data
@@ -156,9 +166,11 @@ bash ECS/infra/build_and_push.sh
 ```
 
 ### 4.2 Create cluster, ALB, target group, service
+
 Use ECS and EC2 consoles with values in ECS/deployment_procedure.md.
 
 Important:
+
 - Task role and execution role must be LabRole ARN
 - Container port must be 80
 - Health path must be /api/health
@@ -217,7 +229,9 @@ bash Lambda/infra/package_lambda.sh
 ```
 
 ### 5.2 Deploy Lambda using AWS Toolkit
+
 In VS Code:
+
 1. Open Lambda source file Lambda/backend/lambda_function.py
 2. Run command palette: AWS: Deploy Lambda
 3. Choose existing or new function name lambdax-music-api
@@ -227,7 +241,9 @@ In VS Code:
 If Toolkit deployment is unavailable in your lab image, deploy zip via Console upload from Lambda/infra/lambda_package.zip.
 
 ### 5.3 Configure Lambda environment variables
+
 Set:
+
 - AWS_REGION
 - USERS_TABLE_NAME
 - MUSIC_TABLE_NAME
@@ -237,6 +253,7 @@ Set:
 - CORS_ALLOW_ORIGINS
 
 ### 5.4 Create API Gateway HTTP API
+
 Create routes from Lambda/infra/api_gateway_routes.txt and integrate all routes with this Lambda.
 
 ### 5.5 Prepare Lambda frontend bucket (S3 website)
@@ -303,10 +320,12 @@ aws dynamodb list-tables --profile awsacademy --region "$AWS_REGION"
 ```
 
 For EC2 service fallback, set in /etc/music-ec2.env:
+
 - AWS_SHARED_CREDENTIALS_FILE
 - AWS_PROFILE
 
 For ECS/Lambda fallback, inject temporary values:
+
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
 - AWS_SESSION_TOKEN
@@ -316,30 +335,36 @@ Do not commit credentials to source control.
 ## 7. Final Functional Validation Checklist
 
 ### EC2
+
 - Root URL opens login page on port 80
 - Register/login works
 - Query supports at least one field rule
 - Subscribe/remove updates DynamoDB
 
 ### ECS
+
 - Frontend is S3 static website URL
 - API served from ALB on 80/443
 - ALB health path returns healthy
 - Root ALB URL redirects to frontend login when FRONTEND_URL is set
 
 ### Lambda
+
 - Frontend is S3 static website URL
 - API invoke URL over HTTPS
 - GET/POST/DELETE methods all work
 
 ### Data and security
+
 - Private bucket remains private
 - Images visible in UI through presigned URLs
 - Query and Scan behaviors both demonstrable
 - GSI and LSI exist in DynamoDB music table
 
 ## 8. Submission Packaging (Recommended)
+
 Keep these folders for submission:
+
 - EC2
 - ECS
 - Lambda
