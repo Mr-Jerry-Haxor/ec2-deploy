@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Ubuntu 24.04 bootstrap for EC2 architecture.
 # Replace placeholder values before first launch.
-REPO_URL="${REPO_URL:-https://github.com/YOUR_GITHUB_USER/cloud-assignment.git}"
+REPO_URL="${REPO_URL:-https://github.com/Mr-Jerry-Haxor/ec2-deploy.git}"
 BRANCH="${BRANCH:-main}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 USERS_TABLE_NAME="${USERS_TABLE_NAME:-music_shared_users}"
