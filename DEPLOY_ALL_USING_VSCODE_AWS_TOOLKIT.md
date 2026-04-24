@@ -141,7 +141,7 @@ Use EC2/deployment_procedure.md section Alternative If User Data Fails.
 ### 3.5 Initialize shared tables and seed data
 
 ```bash
-cd /opt/music-app/EC2/backend
+cd /opt/music-app/backend
 source .venv/bin/activate
 
 python create_aws_tables.py
