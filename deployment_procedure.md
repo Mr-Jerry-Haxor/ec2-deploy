@@ -3,6 +3,7 @@
 This is the first deployment and should be completed before ECS/Lambda. It initializes shared DynamoDB tables and the private S3 covers bucket reused by all architectures.
 
 ## Mandatory Assignment Rules Covered
+
 - Entire solution is deployed in AWS.
 - Elastic Beanstalk is not used.
 - Public access is on standard ports 80/443 only.
@@ -12,7 +13,9 @@ This is the first deployment and should be completed before ECS/Lambda. It initi
 - DynamoDB schema includes GSI and LSI.
 
 ## 0. Required Inputs
+
 Prepare these values first:
+
 - AWS region, for example `us-east-1`
 - AWS account ID
 - GitHub repository URL
@@ -22,6 +25,7 @@ Prepare these values first:
 - Your username prefix, for example `FirstnameLastname`
 
 ## 1. Create the Private Covers Bucket
+
 Run from your local machine (AWS CLI configured):
 
 ```bash
@@ -45,7 +49,9 @@ aws s3api put-public-access-block \
 For `us-east-1`, create-bucket may require no `LocationConstraint`. If AWS CLI returns that error, rerun create-bucket without that flag.
 
 ## 2. Launch EC2 (Ubuntu 24.04)
+
 Use Console steps:
+
 1. Open EC2 -> Launch instance.
 2. Name: `ec2a-music-app`.
 3. AMI: `Ubuntu Server 24.04 LTS`.
@@ -59,12 +65,14 @@ Use Console steps:
 8. Advanced details -> User data: paste the updated script from `EC2/infra/ec2_user_data.sh` and replace placeholders.
 
 User data values you must set before launch:
+
 - `REPO_URL` to your GitHub repo
 - `BRANCH` to `main`
 - `S3_BUCKET_NAME` to your private bucket
 - Optional: `CORS_ALLOW_ORIGINS` (if omitted, script auto-detects instance public host)
 
 ## 3. Validate User Data Bootstrap
+
 SSH to EC2 and run:
 
 ```bash
@@ -80,10 +88,12 @@ curl -sS http://127.0.0.1:8000/health
 ```
 
 Then test from browser:
+
 - `http://<EC2_PUBLIC_DNS>/`
 - `http://<EC2_PUBLIC_DNS>/login.html`
 
 ## 4. Alternative If User Data Fails
+
 If user-data does not complete, run manual commands on EC2:
 
 ```bash
@@ -94,7 +104,7 @@ sudo apt-get install -y git python3 python3-venv python3-pip build-essential ngi
 # 2) Clone your repository and switch to main branch.
 sudo mkdir -p /opt/music-app
 sudo chown -R ubuntu:ubuntu /opt/music-app
-git clone --branch main --single-branch <YOUR_REPO_URL> /opt/music-app
+git clone --branch main --single-branch https://github.com/Mr-Jerry-Haxor/ec2-deploy.git /opt/music-app
 
 # 3) Create Python environment and install dependencies.
 cd /opt/music-app/EC2/backend
@@ -150,6 +160,7 @@ sudo systemctl enable --now music-ec2-api
 ```
 
 ## 5. Initialize DynamoDB Tables and Data
+
 On EC2:
 
 ```bash
@@ -173,6 +184,7 @@ python load_aws_data.py \
 ```
 
 ## 6. Runtime Verification Checklist
+
 Run on EC2:
 
 ```bash
@@ -186,6 +198,7 @@ curl -sS -X POST http://localhost/api/login \
 ```
 
 Browser checks:
+
 1. Open `http://<EC2_PUBLIC_DNS>/`.
 2. Confirm login page loads at root URL.
 3. Login with seeded account.
@@ -194,9 +207,11 @@ Browser checks:
 6. Logout and confirm redirect to login.
 
 ## 7. Credential Fallback If LabRole Cannot Access S3/DynamoDB
+
 Use this only when role-based access fails with AccessDenied.
 
 ### 7.1 Verify role path first
+
 ```bash
 # Should return identity and allow listing resources.
 aws sts get-caller-identity
@@ -205,6 +220,7 @@ aws s3 ls "s3://$PRIVATE_BUCKET" --region "$AWS_REGION"
 ```
 
 ### 7.2 Configure shared credentials file
+
 Create `/home/ubuntu/.aws/credentials` on EC2:
 
 ```bash
@@ -231,7 +247,9 @@ sudo systemctl restart music-ec2-api
 ```
 
 ## 8. Values Reused by ECS and Lambda
+
 Keep these final values for next deployments:
+
 - Region
 - Table names
 - Private bucket name
