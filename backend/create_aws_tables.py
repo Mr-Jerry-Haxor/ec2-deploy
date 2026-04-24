@@ -1,3 +1,4 @@
+# Source adaptation: based on existing root-level create_tables_local.py in this repository.
 import os
 import time
 
@@ -78,6 +79,7 @@ def _create_music_table():
         ],
         LocalSecondaryIndexes=[
             {
+                # LSI supports title + album access pattern within the same partition key (title).
                 "IndexName": "TitleAlbumIndex",
                 "KeySchema": [
                     {"AttributeName": "title", "KeyType": "HASH"},
@@ -88,6 +90,7 @@ def _create_music_table():
         ],
         GlobalSecondaryIndexes=[
             {
+                # GSI supports artist/year query path used by API search endpoints.
                 "IndexName": "ArtistYearIndex",
                 "KeySchema": [
                     {"AttributeName": "artist", "KeyType": "HASH"},

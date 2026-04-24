@@ -1,3 +1,4 @@
+# Source adaptation: based on existing root-level app.py in this repository.
 import os
 import re
 from datetime import datetime, timezone

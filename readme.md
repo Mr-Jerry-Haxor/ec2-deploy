@@ -2,6 +2,16 @@
 
 This folder contains a full EC2-native deployment that serves frontend and backend from the same instance.
 
+## Assignment Constraints Covered
+- AWS-only deployment path.
+- No Elastic Beanstalk usage.
+- Public access on standard ports `80`/`443`.
+- IAM constraint handled using pre-created `LabRole`.
+- Secure private S3 object access using presigned URLs.
+- RESTful methods (`GET`, `POST`, `DELETE`) mapped to DynamoDB operations.
+- Branch convention uses `main`.
+- EC2 bootstrap targets Ubuntu 24.04.
+
 ## Contents
 - `backend/`
   - `app.py` Flask API (AWS DynamoDB + private S3 presigned URLs)
@@ -19,6 +29,12 @@ This folder contains a full EC2-native deployment that serves frontend and backe
 
 ## Why This Deployment Comes First
 EC2 is the foundational deployment because it initializes shared data resources (DynamoDB + private S3 object set) that the ECS and Lambda folders can reuse.
+
+## Deployment Notes
+- Use `deployment_procedure.md` for detailed command-by-command instructions.
+- `infra/ec2_user_data.sh` is written for Ubuntu 24.04 and defaults to branch `main`.
+- A manual fallback path is documented if user-data does not fully execute.
+- Credential-file fallback is documented when LabRole permissions are insufficient.
 
 ## Required Configuration
 Edit `frontend/config.js` and set:
