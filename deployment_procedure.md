@@ -85,6 +85,12 @@ sudo systemctl status nginx --no-pager
 
 # Verify local API health.
 curl -sS http://127.0.0.1:8000/health
+
+
+#add public ip to the config.js
+sudo nano  /opt/music-app/frontend/config.js
+
+#like -  API_BASE_URL: "http://3.87.45.164",
 ```
 
 Then test from browser:
